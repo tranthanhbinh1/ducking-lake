@@ -1,19 +1,22 @@
 from contextlib import contextmanager
-
 from dagster import ConfigurableResource, InitResourceContext
 from pydantic import PrivateAttr
 from sqlalchemy import Engine
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session
 
-# from config.database import DatabaseConfig
-# from infrastructure.db.postgres import (
-#     establish_postgres_engine,
-#     get_postgres_session_factory,
-# )
+from infrastructure.db.postgres import (
+    establish_postgres_engine,
+    get_postgres_session_factory,
+)
 
 
 class PostgresResource(ConfigurableResource):
+    username: str
+    password: str
+    hostname: str
+    db_name: str
+    port: int = 5432
     _engine: Engine = PrivateAttr()
     _conn: Connection = PrivateAttr()
     _session: Session = PrivateAttr()
@@ -23,16 +26,15 @@ class PostgresResource(ConfigurableResource):
         # keep connection open for the duration of the execution
         # set up the connection attribute, so it can be used in the execution
 
-        config = DatabaseConfig()
-
         self._engine = establish_postgres_engine(
-            config.POSTGRESQL_USERNAME,
-            config.POSTGRESQL_PASSWORD,
-            config.POSTGRESQL_HOST,
-            config.POSTGRESQL_PORT,
-            config.POSTGRESQL_DB,
-            pool_size=config.POSTGRESQL_POOL_SIZE,
-            max_overflow=config.POSTGRESQL_MAX_OVERFLOW,
+            self.username,
+            self.password,
+            self.hostname,
+            self.db_name,
+            self.port,
+            # Advanced connection handling for Postgres
+            # pool_size=config.POSTGRESQL_POOL_SIZE,
+            # max_overflow=config.POSTGRESQL_MAX_OVERFLOW,
         )
 
         self._conn = self._engine.connect()
