@@ -29,7 +29,7 @@ class Network(BaseModel):
 
 
 class Networks(BaseModel):
-    networks: Optional[list[Network]]
+    networks: list[Network]
 
 
 class Station(BaseModel):
